@@ -2,10 +2,50 @@ import wandb
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from notion_client import Client
 
 
 load_dotenv()
 wandb.login(key=os.getenv("WANDB_KEY"))
+notion_key = os.getenv("NOTION_KEY")
+notion_database = os.getenv("NOTION_DATABASE")
+
+if notion_key and notion_database:
+    notion = Client(auth=notion_key)
+    print("✅ Notion conectado.")
+else:
+    notion = None
+    print("⚠️ Notion não configurado (verifique o .env).")
+
+def send_to_notion(run_object, architecture, accuracy=0, loss=0,status="Finished"):
+    if not notion:
+        return
+    try:
+        notion.pages.create(
+            parent={"database_id": notion_database},
+            properties={
+                "Name": {
+                    "title": [{"text": {"content": run_object.name}}]
+                },
+                "Architecture": {
+                    [{"text": {"name": architecture}}]
+                },
+                "WandBLink": {
+                    "url":run_object.url
+                },
+                "Accuracy":{
+                    "number":accuracy
+                },
+                "Loss":{
+                    "number":loss
+                },
+                "Status":{
+                    [{"select":{"name": status}}]
+                }
+            }
+        )
+    except Exception as e:
+        print(f"❌ Erro ao salvar no Notion: {e}")
 
 
 def main():
@@ -61,10 +101,12 @@ def main():
             else:
                 print(f"Nenhuma rede foi escolhida para o Transfer Learning, somente a ImageNet rodou")
 
+        send_to_notion(run, cnn_type, accuracy, loss)#precisamos salvar a a acurácia e a loss finais dos treinos com esses nomes.
 
     except Exception as e:
         print(f"❌ Erro Crítico durante a execução: {e}")
         wandb.alert(title="Falha no Treino", text=str(e))
+        send_to_notion(run, cnn_type, status="Failed")
 
     finally:
         #Fecha a wandB para a próxima run
