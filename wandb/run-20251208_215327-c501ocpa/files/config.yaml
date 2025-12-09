@@ -1,0 +1,77 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            f115e2xfjutabampv2ym2vo56kmxsn1b:
+                codePath: main.py
+                codePathLocal: main.py
+                cpu_count: 6
+                cpu_count_logical: 12
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "987142123520"
+                        used: "495946477568"
+                email: macuco.vinicius@estudante.ufjf.br
+                executable: C:\Users\Pichau\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\python.exe
+                git:
+                    commit: 9a93d0b9e8d9856a15a5d823f7966bd019ee2a82
+                    remote: https://github.com/ArturUFJF/VC-Trabalho-Pratico.git
+                gpu: NVIDIA GeForce RTX 3060
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 3584
+                      memoryTotal: "12884901888"
+                      name: NVIDIA GeForce RTX 3060
+                      uuid: GPU-1cdb509d-b09a-fdd1-50c9-3e392e86b784
+                host: DESKTOP-SUHMG7B
+                memory:
+                    total: "17066442752"
+                os: Windows-11-10.0.26100-SP0
+                program: C:\Users\Pichau\Documents\PythonProject\VC-Trabalho-Pratico\main.py
+                python: CPython 3.12.10
+                root: C:\Users\Pichau\Documents\PythonProject\VC-Trabalho-Pratico
+                startedAt: "2025-12-09T00:53:27.192288Z"
+                writerId: f115e2xfjutabampv2ym2vo56kmxsn1b
+        m: []
+        python_version: 3.12.10
+        t:
+            "1":
+                - 2
+                - 3
+                - 5
+                - 53
+            "2":
+                - 2
+                - 3
+                - 5
+                - 53
+            "3":
+                - 2
+                - 3
+                - 8
+                - 13
+                - 16
+            "4": 3.12.10
+            "5": 0.23.1
+            "8":
+                - 3
+            "10":
+                - 9
+                - 17
+                - 20
+            "12": 0.23.1
+            "13": windows-amd64
+architecture:
+    value: densenet121-tl
+batch_size:
+    value: 32
+dataset:
+    value: ImageNet + CIFAR-10
+epochs:
+    value: 5
+learning_rate:
+    value: 0.001
+unfrozen_layers:
+    value: 5

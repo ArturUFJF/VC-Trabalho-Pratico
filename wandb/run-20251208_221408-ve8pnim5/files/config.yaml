@@ -1,0 +1,115 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            74f6v5gbwoaolw6rkf7yhd0gd1jsqyww:
+                codePath: main.py
+                codePathLocal: main.py
+                cpu_count: 6
+                cpu_count_logical: 12
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "987142123520"
+                        used: "496345513984"
+                email: macuco.vinicius@estudante.ufjf.br
+                executable: C:\Users\Pichau\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\python.exe
+                git:
+                    commit: 9a93d0b9e8d9856a15a5d823f7966bd019ee2a82
+                    remote: https://github.com/ArturUFJF/VC-Trabalho-Pratico.git
+                gpu: NVIDIA GeForce RTX 3060
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 3584
+                      memoryTotal: "12884901888"
+                      name: NVIDIA GeForce RTX 3060
+                      uuid: GPU-1cdb509d-b09a-fdd1-50c9-3e392e86b784
+                host: DESKTOP-SUHMG7B
+                memory:
+                    total: "17066442752"
+                os: Windows-11-10.0.26100-SP0
+                program: C:\Users\Pichau\Documents\PythonProject\VC-Trabalho-Pratico\main.py
+                python: CPython 3.12.10
+                root: C:\Users\Pichau\Documents\PythonProject\VC-Trabalho-Pratico
+                startedAt: "2025-12-09T01:14:08.476087Z"
+                writerId: 74f6v5gbwoaolw6rkf7yhd0gd1jsqyww
+        m:
+            - "1": epoch/epoch
+              "6":
+                - 3
+              "7": []
+            - "2": epoch/*
+              "5": 1
+              "6":
+                - 1
+              "7": []
+        python_version: 3.12.10
+        t:
+            "1":
+                - 2
+                - 3
+                - 5
+                - 53
+            "2":
+                - 2
+                - 3
+                - 5
+                - 53
+            "3":
+                - 2
+                - 7
+                - 13
+                - 16
+                - 38
+            "4": 3.12.10
+            "5": 0.23.1
+            "8":
+                - 3
+            "10":
+                - 20
+            "12": 0.23.1
+            "13": windows-amd64
+        visualize:
+            conf-matrix_interactive:
+                panel_config:
+                    fieldSettings:
+                        Actual: Actual
+                        Predicted: Predicted
+                        nPredictions: nPredictions
+                    panelDefId: wandb/confusion_matrix/v1
+                    stringSettings:
+                        title: Matriz de Confusão
+                    transform:
+                        name: tableWithLeafColNames
+                    userQuery:
+                        queryFields:
+                            - args:
+                                - name: runSets
+                                  value: ${runSets}
+                              fields:
+                                - fields: []
+                                  name: id
+                                - fields: []
+                                  name: name
+                                - fields: []
+                                  name: _defaultColorIndex
+                                - args:
+                                    - name: tableKey
+                                      value: conf-matrix_interactive_table
+                                  fields: []
+                                  name: summaryTable
+                              name: runSets
+                panel_type: Vega2
+architecture:
+    value: densenet121-tl
+batch_size:
+    value: 128
+dataset:
+    value: ImageNet + CIFAR-10
+epochs:
+    value: 5
+learning_rate:
+    value: 0.001
+unfrozen_layers:
+    value: 0
