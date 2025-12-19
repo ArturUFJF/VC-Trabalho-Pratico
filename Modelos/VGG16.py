@@ -9,7 +9,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import ModelCheckpoint
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 from wandb.integration.keras import WandbMetricsLogger
 import wandb
 
@@ -125,20 +125,24 @@ def trainer_vgg16(config):
         verbose=1
     )
 
+    final_val_acc = history.history['val_accuracy'][-1]
+    wandb.run.summary["best_val_accuracy"] = final_val_acc
+
     # Matriz de Confusao
     y_pred_probs = model.predict(x_test)
     y_pred_classes = np.argmax(y_pred_probs, axis=1)
     y_true_classes = np.argmax(y_test, axis=1)
 
     # Matriz interativa WandB
+    #Aqui eu mudei apenas pra sua rede conseguir uma matriz de confusão própria
     try:
         wandb.log({
-            "conf-matrix_interactive": wandb.plot.confusion_matrix(
+            f"conf-matrix_interactive_{config['architecture']}": wandb.plot.confusion_matrix(
                 probs=None,
                 y_true=y_true_classes,
                 preds=y_pred_classes,
                 class_names=class_names,
-                title='Matriz de Confusão - CIFAR-10',
+                title=f'Matriz de Confusão -{config['architecture']}- CIFAR-10',
             )
         })
     except Exception as e:
@@ -166,6 +170,12 @@ def trainer_vgg16(config):
     wandb.log({"conf_mat_image": wandb.Image(fig)})
     plt.close(fig)
 
+    #Esse bloco serve para mandar a acurácia encontrada por classe, vai servir pra comparar no final.
+    report = classification_report(y_true_classes, y_pred_classes, target_names=class_names, output_dict=True)
+    class_metrics = {}
+    for class_name in class_names:
+        class_metrics[f"class_acc/{class_name}"] = report[class_name]['f1-score']
+
     # Exemplo de validacao
     idx = random.randint(0, len(x_test) - 1)
     sample_image = x_test_raw[idx]
@@ -188,6 +198,13 @@ def trainer_vgg16(config):
     # Métricas de validação são as que importam para avaliar generalização do modelo
     final_loss = history.history['val_loss'][-1]
     final_accuracy = history.history['val_accuracy'][-1]
+
+    #Adicionei a exportação da acc das classes, acc de validação e loss de validação para o WandB.
+    wandb.log({
+        "final_val_accuracy": final_accuracy,
+        "final_val_loss": final_loss,
+        **class_metrics,
+    })
 
     print(f"--- Treino VGG16 finalizado ---")
     print(f"Final validation loss: {final_loss}")
