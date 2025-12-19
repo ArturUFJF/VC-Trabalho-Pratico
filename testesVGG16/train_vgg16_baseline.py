@@ -41,7 +41,7 @@ config = {
 
 print("=== TREINAMENTO BASELINE VGG16 ===")
 print(f"Configuracao: {config}")
-print("Iniciando treinamento (vai demorar algumas horas)...")
+print("Iniciando treinamento completo com 20 epocas")
 
 metrics = trainer_vgg16(config)
 
