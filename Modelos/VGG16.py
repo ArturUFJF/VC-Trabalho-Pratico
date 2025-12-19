@@ -1,6 +1,197 @@
+import os
+import random
 import numpy as np
 import tensorflow as tf
+import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
+import seaborn as sns
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.callbacks import ModelCheckpoint
+from sklearn.metrics import confusion_matrix
+from wandb.integration.keras import WandbMetricsLogger
+import wandb
+
+
+def get_cifar10_labels():
+    builder = tfds.builder("cifar10")
+    builder.download_and_prepare()
+    return builder.info.features['label'].names
+
+
+def normalize_imagenet(x):
+    # Normaliza com estatisticas ImageNet
+    # Mean: [0.485, 0.456, 0.406], Std: [0.229, 0.224, 0.225]
+    x = x.astype('float32') / 255.0
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    x = (x - mean) / std
+    return x
+
+
+def build_vgg16():
+    # Arquitetura VGG16 para CIFAR-10 (32x32x3)
+    # Conv blocks: 64,64->128,128->256,256,256->512,512,512->512,512,512
+    # FC: 512->4096->4096->10
+
+    model = Sequential([
+        # Block 1: 64, 64
+        Conv2D(64, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)),
+        Conv2D(64, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+
+        # Block 2: 128, 128
+        Conv2D(128, (3, 3), activation='relu', padding='same'),
+        Conv2D(128, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+
+        # Block 3: 256, 256, 256
+        Conv2D(256, (3, 3), activation='relu', padding='same'),
+        Conv2D(256, (3, 3), activation='relu', padding='same'),
+        Conv2D(256, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+
+        # Block 4: 512, 512, 512
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+
+        # Block 5: 512, 512, 512
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+
+        # Flatten para FC layers
+        Flatten(),
+
+        # FC layers: 4096, 4096, 10 (SEM dropout conforme tasks)
+        Dense(4096, activation='relu'),
+        Dense(4096, activation='relu'),
+        Dense(10, activation='softmax')
+    ])
+
+    return model
+
+
+def trainer_vgg16(config):
+    print(f"--- Iniciando treinamento VGG16 from scratch ---")
+
+    try:
+        class_names = get_cifar10_labels()
+    except Exception as e:
+        print(f"Erro ao carregar labels via TFDS: {e}")
+        return
+
+    # Carrega CIFAR-10
+    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+
+    # Guarda copia RAW para plotar depois
+    x_test_raw = x_test.copy()
+
+    # Normaliza com ImageNet stats
+    x_train = normalize_imagenet(x_train)
+    x_test = normalize_imagenet(x_test)
+
+    # Encoding das classes
+    y_train = to_categorical(y_train, 10)
+    y_test = to_categorical(y_test, 10)
+
+    # Constroi modelo VGG16
+    model = build_vgg16()
+
+    # Compila com SGD+momentum
+    model.compile(
+        optimizer=tf.keras.optimizers.SGD(
+            learning_rate=config['learning_rate'],
+            momentum=0.9
+        ),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    callbacks_list = [
+        WandbMetricsLogger(log_freq='epoch')
+    ]
+
+    history = model.fit(
+        x_train, y_train,
+        epochs=config['epochs'],
+        batch_size=config['batch_size'],
+        validation_data=(x_test, y_test),
+        callbacks=callbacks_list,
+        verbose=1
+    )
+
+    # Matriz de Confusao
+    y_pred_probs = model.predict(x_test)
+    y_pred_classes = np.argmax(y_pred_probs, axis=1)
+    y_true_classes = np.argmax(y_test, axis=1)
+
+    # Matriz interativa WandB
+    try:
+        wandb.log({
+            "conf-matrix_interactive": wandb.plot.confusion_matrix(
+                probs=None,
+                y_true=y_true_classes,
+                preds=y_pred_classes,
+                class_names=class_names,
+                title='Matriz de Confusão - CIFAR-10',
+            )
+        })
+    except Exception as e:
+        print(f"Aviso: Nao foi possivel gerar matriz nativa do WandB: {e}")
+
+    # Matriz estatica
+    cm = confusion_matrix(y_true_classes, y_pred_classes)
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt='d',
+        cmap='Blues',
+        xticklabels=class_names,
+        yticklabels=class_names,
+        ax=ax
+    )
+    plt.xticks(rotation=45)
+    plt.ylabel('Verdadeiro')
+    plt.xlabel('Predito')
+    plt.title('Matriz de Confusão - CIFAR-10')
+    plt.tight_layout()
+
+    wandb.log({"conf_mat_image": wandb.Image(fig)})
+    plt.close(fig)
+
+    # Exemplo de validacao
+    idx = random.randint(0, len(x_test) - 1)
+    sample_image = x_test_raw[idx]
+
+    real_class = y_true_classes[idx]
+    predicted_class = y_pred_classes[idx]
+
+    real_class_name = class_names[real_class]
+    predicted_class_name = class_names[predicted_class]
+
+    print(f"Enviando exemplo de validacao")
+    wandb.log({
+        "validaton.exemple": wandb.Image(
+            sample_image,
+            caption=f"index: {idx} | Real: {real_class_name} | Predicted: {predicted_class_name}"
+        )
+    })
+
+    final_loss = history.history['val_loss'][-1]
+    final_accuracy = history.history['val_accuracy'][-1]
+
+    print(f"--- Treino VGG16 finalizado ---")
+    print(f"Final loss: {final_loss}")
+    print(f"Final accuracy: {final_accuracy}")
+
+    return {"loss": final_loss, "accuracy": final_accuracy}
 
 
 def create_augmented_versions(image, n_versions=5):

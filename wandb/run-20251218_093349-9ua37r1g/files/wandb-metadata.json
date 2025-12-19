@@ -1,0 +1,38 @@
+{
+  "os":  "Windows-11-10.0.26200-SP0",
+  "python":  "CPython 3.12.10",
+  "startedAt":  "2025-12-18T12:33:49.165441Z",
+  "program":  "D:\\Falculdade\\VisaoComputacional\\VC-Trabalho-Pratico\\test_trainer_vgg16.py",
+  "codePath":  "test_trainer_vgg16.py",
+  "codePathLocal":  "test_trainer_vgg16.py",
+  "git":  {
+    "remote":  "https://github.com/ArturUFJF/VC-Trabalho-Pratico.git",
+    "commit":  "afb75506fdeab32d7206e9cb194f5992074d2d1a"
+  },
+  "email":  "macuco.vinicius@estudante.ufjf.br",
+  "root":  "D:\\Falculdade\\VisaoComputacional\\VC-Trabalho-Pratico",
+  "host":  "DESKTOP-IGC5JDT",
+  "executable":  "D:\\Falculdade\\VisaoComputacional\\VC-Trabalho-Pratico\\venv\\Scripts\\python.exe",
+  "cpu_count":  4,
+  "cpu_count_logical":  8,
+  "gpu":  "GeForce GTX 1650",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "1000203087872",
+      "used":  "46587629568"
+    }
+  },
+  "memory":  {
+    "total":  "14968041472"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "GeForce GTX 1650",
+      "architecture":  "Turing",
+      "uuid":  "GPU-bc42c012-dab7-21fc-1368-bd25ff6cd9d8"
+    }
+  ],
+  "cudaVersion":  "11.0",
+  "writerId":  "3zn6n8o1iehvxxtl9cd2ttf46zezo9lz"
+}
