@@ -10,7 +10,7 @@ from wandb.integration.keras import WandbMetricsLogger
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 import wandb
 
 def get_cifar10_labels():
@@ -53,7 +53,9 @@ def trainer_densenet_tl(config):
     base_model.trainable = False
 
     #Descongela Camadas
-    for layer in base_model.layers[-config['unfrozen_layers']:]: layer.trainable = True
+    if config['unfrozen_layers'] > 0:
+        for layer in base_model.layers[-config['unfrozen_layers']:]:
+            layer.trainable = True
 
     model = Sequential([
         base_model,
@@ -84,6 +86,9 @@ def trainer_densenet_tl(config):
         verbose=1
     )
 
+    final_val_acc = history.history['val_accuracy'][-1]
+    wandb.run.summary["best_val_accuracy"] = final_val_acc
+
     #Mariz de Confusão
     # Obtem probabilidades e classes da rede
     y_pred_probs = model.predict(x_test)
@@ -93,12 +98,12 @@ def trainer_densenet_tl(config):
     #Gera uma matriz de confusão interativa no WandB
     try:
         wandb.log({
-            "conf-matrix_interactive": wandb.plot.confusion_matrix(
+            f"conf-matrix_interactive_{config['architecture']}": wandb.plot.confusion_matrix(
                 probs=None,
                 y_true=y_true_classes,
                 preds=y_pred_classes,
                 class_names=class_names,
-                title='Matriz de Confusão - CIFAR-10',
+                title=f'Matriz de Confusão -{config['architecture']}- CIFAR-10',
             )
         })
     except Exception as e:
@@ -120,36 +125,43 @@ def trainer_densenet_tl(config):
     plt.xticks(rotation=45)
     plt.ylabel('Verdadeiro')
     plt.xlabel('Predito')
-    plt.title('Matriz de Confusão - CIFAR-10')
+    plt.title('Matriz de Confusão -DenseNet 121- CIFAR-10')
     plt.tight_layout()
 
     wandb.log({"conf_mat_image": wandb.Image(fig)})
     plt.close(fig)
 
+    report = classification_report(y_true_classes, y_pred_classes, target_names=class_names, output_dict=True)
+    class_metrics = {}
+    for class_name in class_names:
+        class_metrics[f"class_acc/{class_name}"] = report[class_name]['f1-score']
+
     #Enviando Imagem para comparação
-    idx = random.randint(0, len(x_test) - 1)
-    sample_image = x_test_raw[idx]
-
-    real_class = y_true_classes[idx]
-    predicted_class = y_pred_classes[idx]
-
-    real_class_name = class_names[real_class]
-    predicted_class_name = class_names[predicted_class]
-
-    print(f"Enviando exemplo de validação")
-    wandb.log({
-        "validaton.exemple": wandb.Image(
-            sample_image,
-            caption=f"index: {idx} | Real: {real_class_name} | Predicted: {predicted_class_name}"
-        )
-    })
+    # idx = random.randint(0, len(x_test) - 1)
+    # sample_image = x_test_raw[idx]
+    #
+    # real_class = y_true_classes[idx]
+    # predicted_class = y_pred_classes[idx]
+    #
+    # real_class_name = class_names[real_class]
+    # predicted_class_name = class_names[predicted_class]
+    #
+    # print(f"Enviando exemplo de validação")
+    # wandb.log({
+    #     "validaton.exemple": wandb.Image(
+    #         sample_image,
+    #         caption=f"index: {idx} | Real: {real_class_name} | Predicted: {predicted_class_name}"
+    #     )
+    # })
 
     final_loss = history.history['val_loss'][-1]
     final_accuracy = history.history['val_accuracy'][-1]
 
-    print(f"--- Treino da DenseNet121 finalizado ---")
-    print(f"Final loss: {final_loss}")
-    print(f"Final accuracy: {final_accuracy}")
+    wandb.log({
+        "final_val_accuracy": final_accuracy,
+        "final_val_loss": final_loss,
+        **class_metrics,
+    })
 
     return {"loss": final_loss, "accuracy": final_accuracy}
 
