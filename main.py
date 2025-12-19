@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 from Modelos.DenseNet121 import trainer_densenet_tl
 from Notion.notion_exporter import send_to_notion
+from sklearn.metrics import classification_report
 from pathlib import Path
 
 directory = Path(__file__).resolve().parent
@@ -22,10 +23,10 @@ def main():
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
-        "epochs": 15,
+        "epochs": 20,
         "batch_size": 64,
-        "learning_rate": 0.001, #1e-3, se for descongelar camadas, o ideal e reduzir mais a LR
-        "unfrozen_layers": 0 #Estou usando um numero positivo aqui, faço o -config["unfrozen_layer"] na rede, se acharem melhor mudar esse padrão, me avise
+        "learning_rate": 1e-5, #1e-3, se for descongelar camadas, o ideal e reduzir mais a LR
+        "unfrozen_layers": 90 #Estou usando um numero positivo aqui, faço o -config["unfrozen_layer"] na rede, se acharem melhor mudar esse padrão, me avise
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB
@@ -61,7 +62,9 @@ def main():
         else:
             print(f"Nenhuma rede foi escolhida")
 
-        send_to_notion(run, cnn_type, metrics['accuracy'], metrics['loss'])#precisamos salvar a a acurácia e a loss finais dos treinos com esses nomes.
+        acc = metrics.get('accuracy',0)
+        loss = metrics.get('loss',0)
+        send_to_notion(run, cnn_type, acc, loss)#precisamos salvar a a acurácia e a loss finais dos treinos com esses nomes.
 
     except Exception as e:
         print(f"❌ Erro Crítico durante a execução: {e}")
