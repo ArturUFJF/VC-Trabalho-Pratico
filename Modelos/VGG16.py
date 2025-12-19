@@ -184,12 +184,14 @@ def trainer_vgg16(config):
         )
     })
 
+    # IMPORTANTE: Usar val_loss e val_accuracy (validação), não loss/accuracy de treino
+    # Métricas de validação são as que importam para avaliar generalização do modelo
     final_loss = history.history['val_loss'][-1]
     final_accuracy = history.history['val_accuracy'][-1]
 
     print(f"--- Treino VGG16 finalizado ---")
-    print(f"Final loss: {final_loss}")
-    print(f"Final accuracy: {final_accuracy}")
+    print(f"Final validation loss: {final_loss}")
+    print(f"Final validation accuracy: {final_accuracy}")
 
     return {"loss": final_loss, "accuracy": final_accuracy}
 
