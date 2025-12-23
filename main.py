@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from Modelos.DenseNet121 import trainer_densenet_tl
+from Modelos.VGG16 import trainer_vgg16
 from Notion.notion_exporter import send_to_notion
 from sklearn.metrics import classification_report
 from pathlib import Path
@@ -17,16 +18,15 @@ def main():
     #Define qual a rede a ser treinada (
     # "vgg16" para a vgg16 da Lívia, "vgg16-tl" para a "vgg16" do Artur, "resnet50-tl" ou "densenet121-tl")
     #Qualquer outro valor aqui e nehuma rede é escolhida.
-    cnn_type = "densenet121-tl"
+    cnn_type = "vgg16"
 
     # Hiperparâmetros, a gente muda tudo por aqui
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
         "epochs": 20,
-        "batch_size": 64,
-        "learning_rate": 1e-5, #1e-3, se for descongelar camadas, o ideal e reduzir mais a LR
-        "unfrozen_layers": 90 #Estou usando um numero positivo aqui, faço o -config["unfrozen_layer"] na rede, se acharem melhor mudar esse padrão, me avise
+        "batch_size": 128,
+        "learning_rate": 0.01,
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB
@@ -44,6 +44,7 @@ def main():
         if cnn_type == "vgg16":
             #Lógica pra a VGG16 da Lívia
             print(f"{cnn_type}-run-{datetime.now().strftime('%H%M')} metrics:")
+            metrics = trainer_vgg16(config)
 
 
         elif cnn_type == "vgg16-tl":
