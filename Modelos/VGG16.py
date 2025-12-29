@@ -99,6 +99,30 @@ def trainer_vgg16(config):
     y_train = to_categorical(y_train, 10)
     y_test = to_categorical(y_test, 10)
 
+    # Cria dataset com data augmentation para treino
+    print("Configurando data augmentation")
+    data_augmentation = tf.keras.Sequential([
+        tf.keras.layers.RandomFlip("horizontal"),
+        tf.keras.layers.RandomRotation(0.042),
+        tf.keras.layers.RandomTranslation(0.1, 0.1),
+        tf.keras.layers.RandomZoom(0.1),
+    ])
+
+    # Converte para tf.data.Dataset para aplicar augmentation
+    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+    train_dataset = train_dataset.shuffle(buffer_size=1024)
+    train_dataset = train_dataset.batch(config['batch_size'])
+    train_dataset = train_dataset.map(
+        lambda x, y: (data_augmentation(x, training=True), y),
+        num_parallel_calls=tf.data.AUTOTUNE
+    )
+    train_dataset = train_dataset.prefetch(tf.data.AUTOTUNE)
+
+    # Dataset de validacao sem augmentation
+    val_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+    val_dataset = val_dataset.batch(config['batch_size'])
+    val_dataset = val_dataset.prefetch(tf.data.AUTOTUNE)
+
     # Constroi modelo VGG16
     model = build_vgg16()
 
@@ -117,10 +141,9 @@ def trainer_vgg16(config):
     ]
 
     history = model.fit(
-        x_train, y_train,
+        train_dataset,
         epochs=config['epochs'],
-        batch_size=config['batch_size'],
-        validation_data=(x_test, y_test),
+        validation_data=val_dataset,
         callbacks=callbacks_list,
         verbose=1
     )
