@@ -21,13 +21,13 @@ def main():
     cnn_type = "vgg16"
 
     # Hiperparâmetros, a gente muda tudo por aqui
-    # EXPERIMENTO 3C: Learning rate 0.0075 - sweet spot entre estabilidade e performance
+    # EXPERIMENTO 4: Batch menor (64) - efeito regularizador
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
         "epochs": 20,  # Baseline
-        "batch_size": 128,  # Baseline
-        "learning_rate": 0.0075,  # MUDOU: 0.005 -> 0.0075 (3/4 entre 0.005 e 0.01)
+        "batch_size": 64,  # MUDOU: 128 -> 64 (metade do baseline)
+        "learning_rate": 0.01,  # Baseline
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB
