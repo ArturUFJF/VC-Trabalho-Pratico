@@ -21,11 +21,11 @@ def main():
     cnn_type = "vgg16"
 
     # Hiperparâmetros, a gente muda tudo por aqui
-    # EXPERIMENTO 2: Menos épocas (15) - ponto ótimo observado
+    # EXPERIMENTO 2: Menos épocas (19) - ponto ótimo observado no Exp1
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
-        "epochs": 15,  # MUDOU: 20 -> 15 (Experimento 2 - testar ponto ótimo)
+        "epochs": 19,  # MUDOU: 20 -> 19 (Experimento 2 - melhor epoch do Exp1)
         "batch_size": 128,
         "learning_rate": 0.01,
     }
