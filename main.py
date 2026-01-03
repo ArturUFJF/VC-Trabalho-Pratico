@@ -21,13 +21,13 @@ def main():
     cnn_type = "vgg16"
 
     # Hiperparâmetros, a gente muda tudo por aqui
-    # EXPERIMENTO 5: Épocas 25 (INCREMENTAL - usa melhor lr=0.0001)
+    # EXPERIMENTO 5: Épocas 25 (INCREMENTAL - usa lr=0.01)
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
         "epochs": 25,  # MUDOU: 20 -> 25
         "batch_size": 128,
-        "learning_rate": 0.0001,  # Melhor lr escolhido (1e-4)
+        "learning_rate": 0.01,  # Mantém lr baseline (melhor resultado)
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB
