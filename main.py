@@ -21,11 +21,11 @@ def main():
     cnn_type = "vgg16"
 
     # Hiperparâmetros, a gente muda tudo por aqui
-    # EXPERIMENTO 5: Épocas 25 (INCREMENTAL - usa lr=0.01)
+    # EXPERIMENTO 6: Épocas 30 (INCREMENTAL - usa lr=0.01)
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
-        "epochs": 25,  # MUDOU: 20 -> 25
+        "epochs": 30,  # MUDOU: 25 -> 30
         "batch_size": 128,
         "learning_rate": 0.01,  # Mantém lr baseline (melhor resultado)
     }
