@@ -1,10 +1,11 @@
 import random
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from keras import mixed_precision
 from keras.applications import ResNet50
 from keras.applications.resnet50 import preprocess_input
 from keras.models import Sequential
-from keras.layers import Dense, GlobalAveragePooling2D
+from keras.layers import Dense, GlobalAveragePooling2D, Resizing, Lambda
 from keras.utils import to_categorical
 from wandb.integration.keras import WandbMetricsLogger
 import numpy as np
@@ -36,6 +37,8 @@ def get_cifar10_labels():
 
 def trainer_resnet50_tl(config):
     print(f"--- Iniciando o transfer learning da ResNet50 ---")
+    mixed_precision.set_global_policy("mixed_float16")
+    print("Mixed precision policy:", mixed_precision.global_policy())
 
     try:
         class_names = get_cifar10_labels()
@@ -58,11 +61,11 @@ def trainer_resnet50_tl(config):
 
     #Carrega a ResNet50 treinada pela ImageNet
     # include_top=False: Remove a camada final de 1000 classes
-    # input_shape=(32, 32, 3): Define o tamanho das imagens do CIFAR
+    # input_shape=(200, 200, 3): Define o tamanho das imagens do CIFAR
     base_model = ResNet50(
         include_top=False,
         weights='imagenet',
-        input_shape=(32, 32, 3),
+        input_shape=(224, 224, 3),
     )
 
     base_model.trainable = False
@@ -73,6 +76,8 @@ def trainer_resnet50_tl(config):
             layer.trainable = True
 
     model = Sequential([
+        Resizing(224, 224, interpolation="bilinear", input_shape=(32, 32, 3)),
+        Lambda(preprocess_input),
         base_model,
         # O GlobalAveragePooling transforma os mapas de características 3D em um vetor 1D
         GlobalAveragePooling2D(),

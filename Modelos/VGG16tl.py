@@ -1,9 +1,10 @@
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from keras import mixed_precision
 from keras.applications import VGG16
 from keras.applications.vgg16 import preprocess_input
 from keras.models import Sequential
-from keras.layers import Dense, GlobalAveragePooling2D
+from keras.layers import Dense, GlobalAveragePooling2D, Resizing, Lambda
 from keras.utils import to_categorical
 from wandb.integration.keras import WandbMetricsLogger
 import numpy as np
@@ -35,6 +36,8 @@ def get_cifar10_labels():
 
 def trainer_vgg16_tl(config):
     print(f"--- Iniciando o transfer learning da VGG16 ---")
+    mixed_precision.set_global_policy("mixed_float16")
+    print("Mixed precision policy:", mixed_precision.global_policy())
 
     try:
         class_names = get_cifar10_labels()
@@ -52,14 +55,15 @@ def trainer_vgg16_tl(config):
     #Encoding das classes do CIFAR-10
     y_train = to_categorical(y_train,10)
     y_test = to_categorical(y_test,10)
+  
 
     #Carrega a VGG16 treinada pela ImageNet
     # include_top=False: Remove a camada final de 1000 classes
-    # input_shape=(32, 32, 3): Define o tamanho das imagens do CIFAR
+    # input_shape=(224, 224, 3): Define o tamanho das imagens do CIFAR
     base_model = VGG16(
         include_top=False,
         weights='imagenet',
-        input_shape=(32, 32, 3),
+        input_shape=(224, 224, 3)
     )
 
     base_model.trainable = False
@@ -70,6 +74,8 @@ def trainer_vgg16_tl(config):
             layer.trainable = True
 
     model = Sequential([
+        Resizing(224, 224, interpolation="bilinear", input_shape=(32, 32, 3)),
+        Lambda(preprocess_input),
         base_model,
         # O GlobalAveragePooling transforma os mapas de características 3D em um vetor 1D
         GlobalAveragePooling2D(),

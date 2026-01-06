@@ -8,6 +8,11 @@ from Modelos.ResNet50tl import trainer_resnet50_tl
 from Notion.notion_exporter import send_to_notion
 from sklearn.metrics import classification_report
 from pathlib import Path
+import tensorflow as tf
+
+print("TF version:", tf.__version__)
+print("GPUs:", tf.config.list_physical_devices("GPU"))
+print("CPUs:", tf.config.list_physical_devices("CPU"))
 
 directory = Path(__file__).resolve().parent
 env = directory / '.env'
