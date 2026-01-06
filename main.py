@@ -13,7 +13,10 @@ directory = Path(__file__).resolve().parent
 env = directory / '.env'
 load_dotenv(dotenv_path=env)
 wand_key = os.getenv("WANDB_KEY")
-wandb.login(key=wand_key.strip(), relogin=True)
+if wand_key and wand_key.strip():
+    wandb.login(key=wand_key.strip(), relogin=True)
+else:
+    print("⚠️ WANDB_KEY não encontrado no .env; assumindo que o wandb já está autenticado.")
 
 def main():
     #Define qual a rede a ser treinada (
@@ -26,9 +29,9 @@ def main():
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
         "epochs": 20,
-        "batch_size": 64,
-        "learning_rate": 1e-5, #1e-3, se for descongelar camadas, o ideal e reduzir mais a LR
-        "unfrozen_layers": 50 #Estou usando um numero positivo aqui, faço o -config["unfrozen_layer"] na rede, se acharem melhor mudar esse padrão, me avise
+        "batch_size": 32,
+        "learning_rate": 1e-4, #1e-3, se for descongelar camadas, o ideal e reduzir mais a LR
+        "unfrozen_layers": 16 #Estou usando um numero positivo aqui, faço o -config["unfrozen_layer"] na rede, se acharem melhor mudar esse padrão, me avise
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB

@@ -1,10 +1,9 @@
-import random
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from keras.applications import VGG16
 from keras.applications.vgg16 import preprocess_input
 from keras.models import Sequential
-from keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from keras.layers import Dense, GlobalAveragePooling2D
 from keras.utils import to_categorical
 from wandb.integration.keras import WandbMetricsLogger
 import numpy as np
@@ -14,10 +13,25 @@ from sklearn.metrics import confusion_matrix, classification_report
 import wandb
 
 def get_cifar10_labels():
-    #Seve apenas para carregar os nomes das classes do CIFAR-10
-    builder = tfds.builder("cifar10")
-    builder.download_and_prepare()
-    return builder.info.features['label'].names
+    # Serve apenas para carregar os nomes das classes do CIFAR-10.
+    # TFDS pode exigir download/Internet; mantemos fallback para evitar falhas.
+    try:
+        builder = tfds.builder("cifar10")
+        builder.download_and_prepare()
+        return builder.info.features['label'].names
+    except Exception:
+        return [
+            "airplane",
+            "automobile",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        ]
 
 def trainer_vgg16_tl(config):
     print(f"--- Iniciando o transfer learning da VGG16 ---")
@@ -26,12 +40,10 @@ def trainer_vgg16_tl(config):
         class_names = get_cifar10_labels()
     except Exception as e:
         print(f"Erro ao carregar as labels via TFSD: {e}")
-        return
+        return {}
 
     #Carrega os dados do dataset
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
-
-    x_test_raw = x_test.copy()
 
     #Ajusta as imagens para o padrão da VGG16
     x_train = preprocess_input(x_train)
@@ -43,11 +55,11 @@ def trainer_vgg16_tl(config):
 
     #Carrega a VGG16 treinada pela ImageNet
     # include_top=False: Remove a camada final de 1000 classes
-    # input_shape=(224, 224, 3): Define o tamanho das imagens do CIFAR
+    # input_shape=(32, 32, 3): Define o tamanho das imagens do CIFAR
     base_model = VGG16(
         include_top=False,
         weights='imagenet',
-        input_shape=(224, 224, 3),
+        input_shape=(32, 32, 3),
     )
 
     base_model.trainable = False
