@@ -1,12 +1,11 @@
-import random
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from keras.src.layers import Resizing
-from tensorflow.keras.applications import DenseNet121
-from tensorflow.keras.applications.densenet import preprocess_input
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
-from tensorflow.keras.utils import to_categorical
+from keras import mixed_precision
+from keras.applications import VGG16
+from keras.applications.vgg16 import preprocess_input
+from keras.models import Sequential
+from keras.layers import Dense, GlobalAveragePooling2D, Resizing, Lambda
+from keras.utils import to_categorical
 from wandb.integration.keras import WandbMetricsLogger
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,40 +14,56 @@ from sklearn.metrics import confusion_matrix, classification_report
 import wandb
 
 def get_cifar10_labels():
-    #Seve apenas para carregar os nomes das classes do CIFAR-10
-    builder = tfds.builder("cifar10")
-    builder.download_and_prepare()
-    return builder.info.features['label'].names
+    # Serve apenas para carregar os nomes das classes do CIFAR-10.
+    # TFDS pode exigir download/Internet; mantemos fallback para evitar falhas.
+    try:
+        builder = tfds.builder("cifar10")
+        builder.download_and_prepare()
+        return builder.info.features['label'].names
+    except Exception:
+        return [
+            "airplane",
+            "automobile",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        ]
 
-def trainer_densenet_tl(config):
-    print(f"--- Iniciando o transfer learning da DenseNet121 ---")
+def trainer_vgg16_tl(config):
+    print(f"--- Iniciando o transfer learning da VGG16 ---")
+    mixed_precision.set_global_policy("mixed_float16")
+    print("Mixed precision policy:", mixed_precision.global_policy())
 
     try:
         class_names = get_cifar10_labels()
     except Exception as e:
         print(f"Erro ao carregar as labels via TFSD: {e}")
-        return
+        return {}
 
     #Carrega os dados do dataset
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
 
-    x_test_raw = x_test.copy()
-
-    #Ajusta as imagens para o padrão da DenseNEt
+    #Ajusta as imagens para o padrão da VGG16
     x_train = preprocess_input(x_train)
     x_test = preprocess_input(x_test)
 
     #Encoding das classes do CIFAR-10
     y_train = to_categorical(y_train,10)
     y_test = to_categorical(y_test,10)
+  
 
-    #Carrega a DenseNet121 treinada pela ImageNet
+    #Carrega a VGG16 treinada pela ImageNet
     # include_top=False: Remove a camada final de 1000 classes
-    # input_shape=(32, 32, 3): Define o tamanho das imagens do CIFAR
-    base_model = DenseNet121(
+    # input_shape=(224, 224, 3): Define o tamanho das imagens do CIFAR
+    base_model = VGG16(
         include_top=False,
         weights='imagenet',
-        input_shape=(224, 224, 3),
+        input_shape=(224, 224, 3)
     )
 
     base_model.trainable = False
@@ -59,8 +74,8 @@ def trainer_densenet_tl(config):
             layer.trainable = True
 
     model = Sequential([
-        Resizing(224,224, interpolation='bilinear', input_shape=(32, 32, 3)),
-
+        Resizing(224, 224, interpolation="bilinear", input_shape=(32, 32, 3)),
+        Lambda(preprocess_input),
         base_model,
         # O GlobalAveragePooling transforma os mapas de características 3D em um vetor 1D
         GlobalAveragePooling2D(),
@@ -106,7 +121,7 @@ def trainer_densenet_tl(config):
                 y_true=y_true_classes,
                 preds=y_pred_classes,
                 class_names=class_names,
-                title=f'Matriz de Confusão -{config['architecture']}- CIFAR-10',
+                title=f"Matriz de Confusão -{config['architecture']}- CIFAR-10",
             )
         })
     except Exception as e:
@@ -128,7 +143,7 @@ def trainer_densenet_tl(config):
     plt.xticks(rotation=45)
     plt.ylabel('Verdadeiro')
     plt.xlabel('Predito')
-    plt.title('Matriz de Confusão -DenseNet 121- CIFAR-10')
+    plt.title('Matriz de Confusão -VGG16- CIFAR-10')
     plt.tight_layout()
 
     wandb.log({"conf_mat_image": wandb.Image(fig)})

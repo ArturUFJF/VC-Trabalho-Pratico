@@ -1,0 +1,82 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            5b5aytuunya2mzvrjunea0fr41bhd3oi:
+                codePath: main.py
+                codePathLocal: main.py
+                cpu_count: 6
+                cpu_count_logical: 12
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "2000381014016"
+                        used: "882541531136"
+                email: macuco.vinicius@estudante.ufjf.br
+                executable: D:\UFJF\Visão Computacional\VC-Trabalho-Pratico\.venv\Scripts\python.exe
+                git:
+                    commit: 5b43b1a478b43d1e05e4409e2f8e1e1d67e3e56e
+                    remote: https://github.com/ArturUFJF/VC-Trabalho-Pratico.git
+                gpu: NVIDIA GeForce RTX 4060
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 3072
+                      memoryTotal: "8585740288"
+                      name: NVIDIA GeForce RTX 4060
+                      uuid: GPU-b6544c9f-a670-310a-c2e0-053e41a1d09f
+                host: Artur-PC
+                memory:
+                    total: "29639036928"
+                os: Windows-11-10.0.26100-SP0
+                program: d:\UFJF\Visão Computacional\VC-Trabalho-Pratico\main.py
+                python: CPython 3.12.3
+                root: D:\UFJF\Visão Computacional\VC-Trabalho-Pratico
+                startedAt: "2026-01-06T06:36:49.244766Z"
+                writerId: 5b5aytuunya2mzvrjunea0fr41bhd3oi
+        m:
+            - "1": epoch/epoch
+              "6":
+                - 3
+              "7": []
+            - "2": epoch/*
+              "5": 1
+              "6":
+                - 1
+              "7": []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 2
+                - 3
+                - 5
+                - 53
+            "2":
+                - 2
+                - 3
+                - 5
+                - 53
+            "3":
+                - 2
+                - 7
+                - 13
+                - 16
+                - 38
+            "4": 3.12.3
+            "5": 0.23.1
+            "8":
+                - 3
+            "12": 0.23.1
+            "13": windows-amd64
+architecture:
+    value: vgg16-tl
+batch_size:
+    value: 32
+dataset:
+    value: ImageNet + CIFAR-10
+epochs:
+    value: 20
+learning_rate:
+    value: 0.0001
+unfrozen_layers:
+    value: 50

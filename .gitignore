@@ -135,14 +135,18 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-#.env
+.env
 .envrc
 .venv
+.venv_wsl/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Weights & Biases (logs de treino)
+wandb/
 
 # Spyder project settings
 .spyderproject

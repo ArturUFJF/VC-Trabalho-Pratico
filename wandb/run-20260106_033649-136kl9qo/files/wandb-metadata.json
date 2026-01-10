@@ -1,0 +1,40 @@
+{
+  "os":  "Windows-11-10.0.26100-SP0",
+  "python":  "CPython 3.12.3",
+  "startedAt":  "2026-01-06T06:36:49.244766Z",
+  "program":  "d:\\UFJF\\Visão Computacional\\VC-Trabalho-Pratico\\main.py",
+  "codePath":  "main.py",
+  "codePathLocal":  "main.py",
+  "git":  {
+    "remote":  "https://github.com/ArturUFJF/VC-Trabalho-Pratico.git",
+    "commit":  "5b43b1a478b43d1e05e4409e2f8e1e1d67e3e56e"
+  },
+  "email":  "macuco.vinicius@estudante.ufjf.br",
+  "root":  "D:\\UFJF\\Visão Computacional\\VC-Trabalho-Pratico",
+  "host":  "Artur-PC",
+  "executable":  "D:\\UFJF\\Visão Computacional\\VC-Trabalho-Pratico\\.venv\\Scripts\\python.exe",
+  "cpu_count":  6,
+  "cpu_count_logical":  12,
+  "gpu":  "NVIDIA GeForce RTX 4060",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "2000381014016",
+      "used":  "882541531136"
+    }
+  },
+  "memory":  {
+    "total":  "29639036928"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 4060",
+      "memoryTotal":  "8585740288",
+      "cudaCores":  3072,
+      "architecture":  "Ada",
+      "uuid":  "GPU-b6544c9f-a670-310a-c2e0-053e41a1d09f"
+    }
+  ],
+  "cudaVersion":  "13.0",
+  "writerId":  "5b5aytuunya2mzvrjunea0fr41bhd3oi"
+}
