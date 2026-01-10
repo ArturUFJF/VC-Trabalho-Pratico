@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from Modelos.DenseNet121 import trainer_densenet_tl
+from Modelos.VGG16 import trainer_vgg16
 from Modelos.VGG16tl import trainer_vgg16_tl
 from Modelos.ResNet50tl import trainer_resnet50_tl
 from Notion.notion_exporter import send_to_notion
@@ -30,6 +31,7 @@ def main():
     cnn_type = "vgg16-tl"
 
     # Hiperparâmetros, a gente muda tudo por aqui
+    # CONFIGURAÇÃO ÓTIMA - Run 2 de 3 (para média e desvio padrão)
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
@@ -54,6 +56,7 @@ def main():
         if cnn_type == "vgg16":
             #Lógica pra a VGG16 da Lívia
             print(f"{cnn_type}-run-{datetime.now().strftime('%H%M')} metrics:")
+            metrics = trainer_vgg16(config)
 
 
         elif cnn_type == "vgg16-tl":
