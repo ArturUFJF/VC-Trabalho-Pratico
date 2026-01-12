@@ -33,10 +33,10 @@ def main():
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
-        "epochs": 20,
-        "batch_size": 32,
-        "learning_rate": 1e-4, #1e-3, se for descongelar camadas, o ideal e reduzir mais a LR
-        "unfrozen_layers": 16 #Estou usando um numero positivo aqui, faço o -config["unfrozen_layer"] na rede, se acharem melhor mudar esse padrão, me avise
+        "epochs": 15,
+        "batch_size": 48,
+        "learning_rate": 1e-5,
+        "unfrozen_layers": 12
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB

@@ -75,18 +75,18 @@ def trainer_vgg16_tl(config):
 
     model = Sequential([
         Resizing(224, 224, interpolation="bilinear", input_shape=(32, 32, 3)),
-        Lambda(preprocess_input),
+        # Lambda(preprocess_input), # Removido pois os dados já entram pré-processados
         base_model,
         # O GlobalAveragePooling transforma os mapas de características 3D em um vetor 1D
         GlobalAveragePooling2D(),
         # saída de acordo com o CIFAR-10
-        Dense(10, activation='softmax'),
+        Dense(10, activation='softmax', dtype='float32'), # dtype='float32' é essencial para mixed_precision
         ]
     )
 
     #Compilando
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=config['learning_rate']),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=config['learning_rate'], epsilon=1e-6),
         loss='categorical_crossentropy',
         metrics=['accuracy'],
     )
