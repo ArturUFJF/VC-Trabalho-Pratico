@@ -1,6 +1,7 @@
 import random
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from keras.src.layers import Resizing
 from tensorflow.keras.applications import DenseNet121
 from tensorflow.keras.applications.densenet import preprocess_input
 from tensorflow.keras.models import Sequential
@@ -47,7 +48,7 @@ def trainer_densenet_tl(config):
     base_model = DenseNet121(
         include_top=False,
         weights='imagenet',
-        input_shape=(32, 32, 3),
+        input_shape=(224, 224, 3),
     )
 
     base_model.trainable = False
@@ -58,6 +59,8 @@ def trainer_densenet_tl(config):
             layer.trainable = True
 
     model = Sequential([
+        Resizing(224,224, interpolation='bilinear', input_shape=(32, 32, 3)),
+
         base_model,
         # O GlobalAveragePooling transforma os mapas de características 3D em um vetor 1D
         GlobalAveragePooling2D(),
