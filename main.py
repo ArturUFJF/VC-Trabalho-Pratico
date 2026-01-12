@@ -33,8 +33,8 @@ def main():
     config = {
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
-        "epochs": 15,
-        "batch_size": 48,
+        "epochs": 25,
+        "batch_size": 32,
         "learning_rate": 1e-5,
         "unfrozen_layers": 12
     }
