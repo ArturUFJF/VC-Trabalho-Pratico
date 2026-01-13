@@ -1,0 +1,46 @@
+\documentclass[
+  article,
+  11pt,
+  oneside,
+  a4paper,
+  english,
+  brazil,
+  sumario=tradicional
+]{abntex2}
+
+% ---
+% PACOTES
+% ---
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{booktabs}  % tabelas melhores
+\usepackage{array}     % colunas p{..}
+\usepackage{float}     % [H]
+\usepackage{url}
+
+% Citações ABNT
+\usepackage[brazilian,hyperpageref]{backref}
+\usepackage[alf]{abntex2cite}
+
+% ---
+% Configurações do backref
+% ---
+\renewcommand{\backrefpagesname}{Citado na(s) página(s):~}
+\renewcommand{\backref}{}
+\renewcommand*{\backrefalt}[4]{%
+  \ifcase #1 %
+    Nenhuma citação no texto.%
+  \or
+    Citado na página #2.%
+  \else
+    Citado #1 vezes nas páginas #2.%
+  \fi}%
+
+% ---
+% PDF e links
+% ---
