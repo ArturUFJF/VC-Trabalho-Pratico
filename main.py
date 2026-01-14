@@ -28,7 +28,7 @@ def main():
     #Define qual a rede a ser treinada (
     # "vgg16" para a vgg16 da Lívia, "vgg16-tl" para a "vgg16" do Artur, "resnet50-tl" ou "densenet121-tl")
     #Qualquer outro valor aqui e nehuma rede é escolhida.
-    cnn_type = "vgg16-tl"
+    cnn_type = "resnet50-tl"
 
     # Hiperparâmetros, a gente muda tudo por aqui
     # CONFIGURAÇÃO ÓTIMA - Run 2 de 3 (para média e desvio padrão)
@@ -36,9 +36,9 @@ def main():
         "architecture": cnn_type,
         "dataset": "ImageNet + CIFAR-10" if "tl" in cnn_type else "CIFAR-10",
         "epochs": 25,
-        "batch_size": 32,
-        "learning_rate": 1e-5,
-        "unfrozen_layers": 12
+        "batch_size": 64,
+        "learning_rate": 1e-6,
+        "unfrozen_layers": 40
     }
 
     # 1. INICIA A RUN, preparando para armazenar dados na wandB
