@@ -51,3 +51,17 @@ Professor: \professor
 \vspace{0.4cm}
 
 \noindent\textbf{Repositório do projeto:} \url{https://github.com/ArturUFJF/VC-Trabalho-Pratico.git}
+
+% -------------------- 1. Estratégias de implementação --------------------
+\section{Estratégias de implementação}
+
+\subsection{Implementação da VGG16 (do zero)}
+Nesta etapa, foi implementada a arquitetura VGG16 por composição de camadas (convolução, pooling e camadas totalmente conectadas), sem utilizar uma implementação pronta da rede completa.
+Foram avaliadas variações de hiperparâmetros como \textit{learning rate}, número de épocas e \textit{batch size}.
+
+\subsection{Transfer learning}
+No transfer learning, foram utilizados modelos pré-treinados em ImageNet (VGG16, ResNet50 e DenseNet121), substituindo a camada de classificação para o problema do CIFAR-10.
+Também foram realizados testes variando hiperparâmetros de treinamento e a quantidade de camadas treináveis por congelamento/descongelamento.
+
+\subsection{Monitoramento com W\&B}
+As execuções (\textit{runs}) foram monitoradas no Weights \& Biases (W\&B), permitindo comparação sistemática e exportação das métricas consolidadas (CSV), incluindo acurácia global e acurácia por classe.
