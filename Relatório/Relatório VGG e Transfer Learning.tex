@@ -1,46 +1,53 @@
-\documentclass[
-  article,
-  11pt,
-  oneside,
-  a4paper,
-  english,
-  brazil,
-  sumario=tradicional
-]{abntex2}
+\documentclass[12pt,a4paper]{article}
 
-% ---
-% PACOTES
-% ---
-\usepackage{lmodern}
-\usepackage[T1]{fontenc}
+% -------------------- Pacotes --------------------
+\usepackage[brazil]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage{indentfirst}
-\usepackage{color}
-\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{microtype}
-\usepackage{booktabs}  % tabelas melhores
-\usepackage{array}     % colunas p{..}
-\usepackage{float}     % [H]
-\usepackage{url}
 
-% Citações ABNT
-\usepackage[brazilian,hyperpageref]{backref}
-\usepackage[alf]{abntex2cite}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
 
-% ---
-% Configurações do backref
-% ---
-\renewcommand{\backrefpagesname}{Citado na(s) página(s):~}
-\renewcommand{\backref}{}
-\renewcommand*{\backrefalt}[4]{%
-  \ifcase #1 %
-    Nenhuma citação no texto.%
-  \or
-    Citado na página #2.%
-  \else
-    Citado #1 vezes nas páginas #2.%
-  \fi}%
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{xcolor}
 
-% ---
-% PDF e links
-% ---
+\hypersetup{
+colorlinks=true,
+linkcolor=blue,
+urlcolor=blue,
+citecolor=blue
+}
+
+% -------------------- CAPA (PREENCHER) --------------------
+\newcommand{\instituicao}{Universidade Federal de Juiz de Fora (UFJF)}
+\newcommand{\departamento}{Departamento de Ciência da Computação}
+\newcommand{\disciplina}{Visão Computacional}
+\newcommand{\professor}{Prof. Luiz Maurílio da Silva Maciel}
+\newcommand{\semestre}{2025/03}
+\newcommand{\tituloTrabalho}{Trabalho Prático -- Classificação no CIFAR-10 com VGG16 e Transfer Learning}
+\newcommand{\autores}{(nomes)}
+\newcommand{\dataRelatorio}{19/01/2026}
+
+\title{\tituloTrabalho}
+\author{\autores}
+\date{\dataRelatorio}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\instituicao\\
+\departamento\\
+Disciplina: \disciplina\ (\semestre)\\
+Professor: \professor
+\end{center}
+
+\vspace{0.4cm}
+
+\noindent\textbf{Repositório do projeto:} \url{https://github.com/ArturUFJF/VC-Trabalho-Pratico.git}
