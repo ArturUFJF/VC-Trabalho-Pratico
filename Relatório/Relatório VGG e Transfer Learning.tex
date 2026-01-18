@@ -115,3 +115,55 @@ DenseNet121-TL & \texttt{densenet121-tl-run-0147} & 0.9342 & 0.00001 & 32 & 20 &
 \subsection{Análise por classe}
 A análise por classe foi realizada a partir das métricas \texttt{class\_acc/*} exportadas do W\&B.
 As discussões devem destacar classes com maior e menor acurácia e relacionar com padrões de confusão observados nas matrizes.
+
+% -------------------- 3. Matrizes de confusão --------------------
+\section{Matrizes de confusão}
+
+As matrizes de confusão abaixo foram exportadas do painel do W\&B e são utilizadas como ferramenta qualitativa para identificar padrões de confusão entre classes no CIFAR-10.
+Como múltiplas execuções foram realizadas por arquitetura, as matrizes não são necessariamente do mesmo run que atingiu a maior \texttt{best\_val\_accuracy}; a seleção do ``melhor modelo'' é reportada separadamente com base no CSV do W\&B.
+
+% Coloque estes arquivos na pasta "figuras/" com exatamente estes nomes:
+% - figuras/matriz_vgg16.pdf
+% - figuras/matriz_vgg16_tl.pdf
+% - figuras/matriz_resnet50_tl.pdf
+% - figuras/matriz_densenet121_tl.pdf
+
+\begin{figure}[H]
+\centering
+\adjincludegraphics[
+  width=\textwidth,
+  trim=1cm 20cm 1cm 3cm,
+  clip]{figuras/matriz_vgg16.pdf}
+\caption{Matriz de confusão (W\&B) da VGG16 implementada no CIFAR-10 (validação em \texttt{x\_test}); usada para análise qualitativa de confusões entre classes.}
+\label{fig:confusao_vgg16}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\adjincludegraphics[
+  width=\textwidth,
+  trim=1cm 20cm 1cm 3cm,
+  clip]{figuras/matriz_vgg16_tl.pdf}
+\caption{Matriz de confusão (W\&B) da VGG16 com transfer learning no CIFAR-10 (validação em \texttt{x\_test}); usada para análise qualitativa de confusões entre classes.}
+\label{fig:confusao_vgg16_tl}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\adjincludegraphics[
+  width=\textwidth,
+  trim=1cm 20cm 1cm 3cm,
+  clip]{figuras/matriz_resnet50_tl.pdf}
+\caption{Matriz de confusão (W\&B) da ResNet50 com transfer learning no CIFAR-10 (validação em \texttt{x\_test}); usada para análise qualitativa de confusões entre classes.}
+\label{fig:confusao_resnet50_tl}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\adjincludegraphics[
+  width=\textwidth,
+  trim=1cm 20cm 1cm 3cm,
+  clip]{figuras/matriz_densenet121_tl.pdf}
+\caption{Matriz de confusão (W\&B) da DenseNet121 com transfer learning no CIFAR-10 (validação em \texttt{x\_test}); usada para análise qualitativa de confusões entre classes.}
+\label{fig:confusao_densenet121_tl}
+\end{figure}
