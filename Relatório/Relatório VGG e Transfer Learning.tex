@@ -16,6 +16,7 @@
 \usepackage{array}
 \usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{adjustbox}
 
 \hypersetup{
 colorlinks=true,
@@ -65,3 +66,52 @@ Também foram realizados testes variando hiperparâmetros de treinamento e a qua
 
 \subsection{Monitoramento com W\&B}
 As execuções (\textit{runs}) foram monitoradas no Weights \& Biases (W\&B), permitindo comparação sistemática e exportação das métricas consolidadas (CSV), incluindo acurácia global e acurácia por classe.
+
+% -------------------- 2. Descrição dos experimentos --------------------
+\section{Descrição dos experimentos}
+
+\subsection{Configuração das máquinas}
+Os experimentos foram executados em três máquinas (identificadas nos logs do W\&B), todas com Windows 11 e GPUs NVIDIA compatíveis com CUDA. As configurações são:
+
+\begin{itemize}
+\item \textbf{Máquina 1:} Windows 11 (Build 26100), CPU 6C/12T, GPU NVIDIA GeForce RTX 3060 (12 GB VRAM), CUDA 13.0, RAM $\sim$16 GB, Python CPython 3.12.10.
+\item \textbf{Máquina 2:} Windows 11 (Build 26200), CPU 4C/8T, GPU NVIDIA GeForce GTX 1650, CUDA 11.0, RAM $\sim$14 GB, Python CPython 3.12.10.
+\item \textbf{Máquina 3:} Windows 11 (Build 26100), CPU 6C/12T, GPU NVIDIA GeForce RTX 4060 ($\sim$8 GB VRAM), CUDA 13.0, RAM $\sim$28 GB, Python CPython 3.12.3.
+\end{itemize}
+
+De forma geral, VGG16/VGG16-TL foram testadas nas três máquinas, enquanto ResNet50-TL e DenseNet121-TL foram executadas principalmente na Máquina 3.
+
+\subsection{Protocolo de validação}
+Durante os experimentos, foi utilizado \texttt{x\_test} como conjunto de validação (isto é, as métricas reportadas como \texttt{val\_accuracy} e \texttt{val\_loss} referem-se ao desempenho no conjunto \texttt{x\_test}).
+
+\subsection{Critério de seleção do melhor modelo}
+O melhor modelo foi definido como a execução finalizada (\texttt{State = finished}) com maior \texttt{best\_val\_accuracy} no export do W\&B.
+No CSV mais recente, a maior \texttt{best\_val\_accuracy} observada foi para ResNet50-TL (por exemplo, \texttt{resnet50-tl-run-1109} com \texttt{best\_val\_accuracy = 0.9491}).
+
+\subsection{Tabela comparativa dos melhores resultados}
+A Tabela~\ref{tab:melhores_resultados} resume, para cada arquitetura, o melhor resultado por \texttt{best\_val\_accuracy} e os hiperparâmetros correspondentes (extraídos do CSV do W\&B).
+
+\begin{table}[H]
+\centering
+\caption{Resumo dos melhores resultados por arquitetura (critério: \texttt{best\_val\_accuracy}; apenas runs \texttt{finished}).}
+\label{tab:melhores_resultados}
+
+\setlength{\tabcolsep}{3pt} % reduz o espaço entre colunas (padrão ~6pt) [web:124]
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{3.0cm}p{4.6cm}p{2.2cm}p{2.0cm}p{1.6cm}p{1.6cm}p{2.0cm}@{}}
+\toprule
+\textbf{Arquitetura} & \textbf{Run (W\&B)} & \textbf{best val acc} & \textbf{Learning Rate} & \textbf{Batch} & \textbf{Épocas} & \textbf{Unfrozen} \\
+\midrule
+VGG16 (do zero) & \texttt{vgg16-run-2029} & 0.8532 & 0.01 & 128 & 30 & -- \\
+VGG16-TL & \texttt{vgg16-tl-run-2142} & 0.9439 & 0.00001 & 32 & 50 & 12 \\
+ResNet50-TL & \texttt{resnet50-tl-run-1109} & 0.9491 & 0.0001 & 64 & 50 & 30 \\
+DenseNet121-TL & \texttt{densenet121-tl-run-0147} & 0.9342 & 0.00001 & 32 & 20 & 90 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Análise por classe}
+A análise por classe foi realizada a partir das métricas \texttt{class\_acc/*} exportadas do W\&B.
+As discussões devem destacar classes com maior e menor acurácia e relacionar com padrões de confusão observados nas matrizes.
