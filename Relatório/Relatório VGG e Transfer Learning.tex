@@ -167,3 +167,28 @@ Como múltiplas execuções foram realizadas por arquitetura, as matrizes não s
 \caption{Matriz de confusão (W\&B) da DenseNet121 com transfer learning no CIFAR-10 (validação em \texttt{x\_test}); usada para análise qualitativa de confusões entre classes.}
 \label{fig:confusao_densenet121_tl}
 \end{figure}
+
+
+% -------------------- 5. Conclusão --------------------
+\section{Conclusão}
+Este trabalho implementou a VGG16 do zero e aplicou transfer learning com VGG16, ResNet50 e DenseNet121 para classificação no CIFAR-10.
+Os resultados mostraram que modelos com transfer learning obtiveram desempenho superior ao treinamento do zero, e que a escolha de hiperparâmetros e do número de camadas treináveis impacta diretamente a \texttt{best\_val\_accuracy}.
+
+Como dificuldades, destacam-se o ajuste de hiperparâmetros, a estabilidade do treinamento em algumas configurações e o tempo de execução dos experimentos.
+Como trabalhos futuros, recomenda-se testar \textit{data augmentation} mais forte, regularização adicional e estratégias de \textit{fine-tuning} por blocos para reduzir confusões entre classes visualmente semelhantes.
+
+% -------------------- Referências --------------------
+\begin{thebibliography}{9}
+
+\bibitem{wandb}
+Weights \& Biases. \textit{Experiment Tracking}. Disponível em: \url{https://wandb.ai/}. Acesso em: \dataRelatorio.
+
+\bibitem{cifar10}
+Krizhevsky, A. \textit{Learning Multiple Layers of Features from Tiny Images}. 2009.
+
+\bibitem{imagenet}
+Deng, J. et al. \textit{ImageNet: A Large-Scale Hierarchical Image Database}. CVPR, 2009.
+
+\end{thebibliography}
+
+\end{document}
