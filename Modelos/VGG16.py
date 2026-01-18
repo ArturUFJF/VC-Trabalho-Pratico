@@ -6,7 +6,7 @@ import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import ModelCheckpoint
 from sklearn.metrics import confusion_matrix, classification_report
@@ -30,50 +30,66 @@ def normalize_imagenet(x):
     return x
 
 
-def build_vgg16():
+def build_vgg16(dropout_conv=0.0, dropout_fc=0.0):
     # Arquitetura VGG16 para CIFAR-10 (32x32x3)
     # Conv blocks: 64,64->128,128->256,256,256->512,512,512->512,512,512
     # FC: 512->4096->4096->10
-
-    model = Sequential([
-        # Block 1: 64, 64
-        Conv2D(64, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)),
+    layers = [
+        # Bloco 1
+        Conv2D(64, (3, 3), activation='relu', padding='same'),
         Conv2D(64, (3, 3), activation='relu', padding='same'),
         MaxPooling2D((2, 2), strides=(2, 2)),
+    ]
+    if dropout_conv > 0: layers.append(Dropout(dropout_conv))
 
-        # Block 2: 128, 128
+    layers.extend([
+        # Bloco 2
         Conv2D(128, (3, 3), activation='relu', padding='same'),
         Conv2D(128, (3, 3), activation='relu', padding='same'),
         MaxPooling2D((2, 2), strides=(2, 2)),
-
-        # Block 3: 256, 256, 256
-        Conv2D(256, (3, 3), activation='relu', padding='same'),
-        Conv2D(256, (3, 3), activation='relu', padding='same'),
-        Conv2D(256, (3, 3), activation='relu', padding='same'),
-        MaxPooling2D((2, 2), strides=(2, 2)),
-
-        # Block 4: 512, 512, 512
-        Conv2D(512, (3, 3), activation='relu', padding='same'),
-        Conv2D(512, (3, 3), activation='relu', padding='same'),
-        Conv2D(512, (3, 3), activation='relu', padding='same'),
-        MaxPooling2D((2, 2), strides=(2, 2)),
-
-        # Block 5: 512, 512, 512
-        Conv2D(512, (3, 3), activation='relu', padding='same'),
-        Conv2D(512, (3, 3), activation='relu', padding='same'),
-        Conv2D(512, (3, 3), activation='relu', padding='same'),
-        MaxPooling2D((2, 2), strides=(2, 2)),
-
-        # Flatten para FC layers
-        Flatten(),
-
-        # FC layers: 4096, 4096, 10 (SEM dropout conforme tasks)
-        Dense(4096, activation='relu'),
-        Dense(4096, activation='relu'),
-        Dense(10, activation='softmax')
     ])
+    if dropout_conv > 0: layers.append(Dropout(dropout_conv))
 
-    return model
+    layers.extend([
+        # Bloco 3
+        Conv2D(256, (3, 3), activation='relu', padding='same'),
+        Conv2D(256, (3, 3), activation='relu', padding='same'),
+        Conv2D(256, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+    ])
+    if dropout_conv > 0: layers.append(Dropout(dropout_conv))
+
+    layers.extend([
+        # Bloco 4
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+    ])
+    if dropout_conv > 0: layers.append(Dropout(dropout_conv))
+
+    layers.extend([
+        # Bloco 5
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        Conv2D(512, (3, 3), activation='relu', padding='same'),
+        MaxPooling2D((2, 2), strides=(2, 2)),
+    ])
+    if dropout_conv > 0: layers.append(Dropout(dropout_conv))
+
+    layers.append(Flatten())
+
+    # FC layers
+    layers.append(Dense(4096, activation='relu'))
+    if dropout_fc > 0: layers.append(Dropout(dropout_fc))
+
+    layers.append(Dense(4096, activation='relu'))
+    if dropout_fc > 0: layers.append(Dropout(dropout_fc))
+
+    # Camada de Saída (Sem Dropout depois dela!)
+    layers.append(Dense(10, activation='softmax'))
+
+    return Sequential(layers)
 
 
 def trainer_vgg16(config):
@@ -123,8 +139,18 @@ def trainer_vgg16(config):
     val_dataset = val_dataset.batch(config['batch_size'])
     val_dataset = val_dataset.prefetch(tf.data.AUTOTUNE)
 
+    experiment_param = {
+        "dropout_conv": 0.0,
+        "dropout_fc": 0.5,
+    }
+
+    wandb.config.update(experiment_param, allow_val_change=True)
+
     # Constroi modelo VGG16
-    model = build_vgg16()
+    model = build_vgg16(
+        dropout_conv = wandb.config.dropout_conv,
+        dropout_fc = wandb.config.dropout_fc,
+    )
 
     # Compila com SGD+momentum
     model.compile(
