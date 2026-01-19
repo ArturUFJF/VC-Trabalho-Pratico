@@ -16,13 +16,13 @@
 \usepackage{array}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage{adjustbox}
+\usepackage[export]{adjustbox} % habilita \adjincludegraphics e keys de corte/clip [web:214]
 
 \hypersetup{
-colorlinks=true,
-linkcolor=blue,
-urlcolor=blue,
-citecolor=blue
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
 }
 
 % -------------------- CAPA (PREENCHER) --------------------
@@ -32,7 +32,10 @@ citecolor=blue
 \newcommand{\professor}{Prof. Luiz Maurílio da Silva Maciel}
 \newcommand{\semestre}{2025/03}
 \newcommand{\tituloTrabalho}{Trabalho Prático -- Classificação no CIFAR-10 com VGG16 e Transfer Learning}
-\newcommand{\autores}{(nomes)}
+\newcommand{\autores}{Artur Ferreira de Castro - 202335029 \\ 
+Caio Machado Bertelli - 22465563B \\
+Lívia Ribeiro Pessamilio - 202165088C \\
+Vinícius Macuco Leite Carvalhaes - 202365213AC}
 \newcommand{\dataRelatorio}{19/01/2026}
 
 \title{\tituloTrabalho}
@@ -59,10 +62,11 @@ Professor: \professor
 \subsection{Implementação da VGG16 (do zero)}
 Nesta etapa, foi implementada a arquitetura VGG16 por composição de camadas (convolução, pooling e camadas totalmente conectadas), sem utilizar uma implementação pronta da rede completa.
 Foram avaliadas variações de hiperparâmetros como \textit{learning rate}, número de épocas e \textit{batch size}.
+Também foram testadas alterações na cabeça do classificador (camadas totalmente conectadas) para reduzir overfitting, incluindo o uso de dropout.
 
 \subsection{Transfer learning}
 No transfer learning, foram utilizados modelos pré-treinados em ImageNet (VGG16, ResNet50 e DenseNet121), substituindo a camada de classificação para o problema do CIFAR-10.
-Também foram realizados testes variando hiperparâmetros de treinamento e a quantidade de camadas treináveis por congelamento/descongelamento.
+Também foram realizados testes variando hiperparâmetros de treinamento e a quantidade de camadas treináveis por congelamento/descongelamento (fine-tuning).
 
 \subsection{Monitoramento com W\&B}
 As execuções (\textit{runs}) foram monitoradas no Weights \& Biases (W\&B), permitindo comparação sistemática e exportação das métricas consolidadas (CSV), incluindo acurácia global e acurácia por classe.
@@ -71,7 +75,7 @@ As execuções (\textit{runs}) foram monitoradas no Weights \& Biases (W\&B), pe
 \section{Descrição dos experimentos}
 
 \subsection{Configuração das máquinas}
-Os experimentos foram executados em três máquinas (identificadas nos logs do W\&B), todas com Windows 11 e GPUs NVIDIA compatíveis com CUDA. As configurações são:
+Os experimentos foram executados em máquinas identificadas nos logs do W\&B, todas com Windows 11 e GPUs NVIDIA compatíveis com CUDA. As configurações são:
 
 \begin{itemize}
 \item \textbf{Máquina 1:} Windows 11 (Build 26100), CPU 6C/12T, GPU NVIDIA GeForce RTX 3060 (12 GB VRAM), CUDA 13.0, RAM $\sim$16 GB, Python CPython 3.12.10.
@@ -79,14 +83,16 @@ Os experimentos foram executados em três máquinas (identificadas nos logs do W
 \item \textbf{Máquina 3:} Windows 11 (Build 26100), CPU 6C/12T, GPU NVIDIA GeForce RTX 4060 ($\sim$8 GB VRAM), CUDA 13.0, RAM $\sim$28 GB, Python CPython 3.12.3.
 \end{itemize}
 
-De forma geral, VGG16/VGG16-TL foram testadas nas três máquinas, enquanto ResNet50-TL e DenseNet121-TL foram executadas principalmente na Máquina 3.
+De forma geral, VGG16/VGG16-TL foram testadas nas três máquinas.
+A ResNet50-TL foi executada principalmente na Máquina 3 (com mixed precision fp16) e a DenseNet121-TL foi executada em duas etapas: sem upscaling na Máquina 1 e, por limitação de hardware, com upscaling em Google Colab (GPU Tesla T4), portanto os tempos de execução da DenseNet121 com e sem upscaling não são diretamente comparáveis.\\
+A Máquina 2 foi usada apenas para execuções preliminares/curtas de sanity check; os resultados finais reportados (Tabela 1) concentram-se nas Máquinas 1 e 3, e no Colab para DenseNet com upscaling.
 
 \subsection{Protocolo de validação}
 Durante os experimentos, foi utilizado \texttt{x\_test} como conjunto de validação (isto é, as métricas reportadas como \texttt{val\_accuracy} e \texttt{val\_loss} referem-se ao desempenho no conjunto \texttt{x\_test}).
 
 \subsection{Critério de seleção do melhor modelo}
-O melhor modelo foi definido como a execução finalizada (\texttt{State = finished}) com maior \texttt{best\_val\_accuracy} no export do W\&B.
-No CSV mais recente, a maior \texttt{best\_val\_accuracy} observada foi para ResNet50-TL (por exemplo, \texttt{resnet50-tl-run-1109} com \texttt{best\_val\_accuracy = 0.9491}).
+Para padronizar a comparação no relatório, definiu-se como ``melhor modelo'' a execução finalizada (\texttt{State = finished}) com maior \texttt{best\_val\_accuracy} no export do W\&B.
+Entretanto, ao longo da experimentação, também se observou a \texttt{val\_loss} e o comportamento dos gráficos (estabilidade, divergências e sinais de overfitting), o que motivou algumas decisões qualitativas descritas nas subseções seguintes.
 
 \subsection{Tabela comparativa dos melhores resultados}
 A Tabela~\ref{tab:melhores_resultados} resume, para cada arquitetura, o melhor resultado por \texttt{best\_val\_accuracy} e os hiperparâmetros correspondentes (extraídos do CSV do W\&B).
@@ -96,7 +102,7 @@ A Tabela~\ref{tab:melhores_resultados} resume, para cada arquitetura, o melhor r
 \caption{Resumo dos melhores resultados por arquitetura (critério: \texttt{best\_val\_accuracy}; apenas runs \texttt{finished}).}
 \label{tab:melhores_resultados}
 
-\setlength{\tabcolsep}{3pt} % reduz o espaço entre colunas (padrão ~6pt) [web:124]
+\setlength{\tabcolsep}{3pt}
 \small
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}p{3.0cm}p{4.6cm}p{2.2cm}p{2.0cm}p{1.6cm}p{1.6cm}p{2.0cm}@{}}
@@ -111,6 +117,53 @@ DenseNet121-TL & \texttt{densenet121-tl-run-0147} & 0.9342 & 0.00001 & 32 & 20 &
 \end{tabular}%
 }
 \end{table}
+
+% -------------------- 2.1 Processo individual --------------------
+\subsection{Processo individual de experimentação}
+
+\subsubsection{DenseNet121 com transfer learning (com e sem upscaling)}
+A estratégia adotada para DenseNet121 foi uma busca sistemática a partir de uma configuração base (15 épocas, batch 64, learning rate $1 \times 10^{-3}$ e 0 camadas descongeladas), com o objetivo de equilibrar acurácia final e custo computacional.
+Nesta arquitetura, o processo foi dividido em duas fases: (i) treinamento no CIFAR-10 no tamanho original 32$\times$32 e (ii) treinamento com upscaling para 224$\times$224, compatível com a entrada típica da DenseNet121.
+
+\paragraph{Fase 1: CIFAR-10 32$\times$32 (sem upscaling).}
+Primeiro, testou-se conjuntamente o par (learning rate, camadas descongeladas), selecionando combinações com menor \texttt{val\_loss} e curvas estáveis de loss/acurácia (evitando divergências).
+Após a definição de um par estável, variou-se o número de épocas segundo $E_i = 5 \times i$ e selecionou-se o ponto de melhor custo-benefício com base no ganho de acurácia de validação $G_n = A_n - A_{n-1}$.
+Em seguida, variou-se o batch size segundo $B_i = 32 \times 2^{i-1}$, decidindo entre qualidade e eficiência conforme ganho de tempo e perda de acurácia.
+Nessa fase, o melhor conjunto encontrado (sem upscaling) ficou em torno de learning rate $1 \times 10^{-5}$, 90\% das camadas descongeladas, 25 épocas e batch 64, com acurácia de validação média $\approx 0.712$.
+
+\paragraph{Fase 2: CIFAR-10 224$\times$224 (com upscaling).}
+Devido a limitações de hardware, o upscaling foi executado em ambiente distinto (Google Colab, GPU Tesla T4).
+Mantendo-se a configuração de fine-tuning (learning rate $1 \times 10^{-5}$ e 90\% das camadas descongeladas), observou-se um aumento significativo na acurácia de validação (para $\approx 0.934$).
+Aplicando critérios análogos de otimização, definiu-se 20 épocas como melhor custo-benefício e batch size 32 como escolha final (diferença de tempo pequena e acurácia praticamente igual em batch 32 vs 64, priorizando estabilidade e compatibilidade de memória).
+
+\subsubsection{VGG16 com transfer learning (VGG16-TL)}
+A metodologia de otimização para a VGG16-TL seguiu uma estratégia de descida de coordenadas, avaliando iterativamente subconjuntos de hiperparâmetros mantendo os demais fixos.
+As imagens foram redimensionadas (upscaling) para 224$\times$224 para compatibilidade com a entrada do modelo pré-treinado.
+
+\paragraph{Passo 1: learning rate e camadas descongeladas.}
+Foram testadas combinações de taxa de aprendizado e número de camadas descongeladas, observando-se que taxas maiores podem gerar instabilidade numérica (divergência, perda NaN) em contexto de transfer learning.
+A melhor combinação nesta etapa foi learning rate $1 \times 10^{-5}$ com 12 camadas descongeladas.
+
+\paragraph{Passo 2: batch size.}
+Com learning rate e camadas descongeladas fixos, variou-se o batch size e escolheu-se o valor que maximizou a acurácia de validação e reduziu a loss de validação, resultando em batch 32.
+
+\paragraph{Passo 3: número de épocas.}
+Foi realizada uma execução estendida até 50 épocas para analisar tendência e sinais de overfitting.
+Observou-se que 25 épocas apresentaram um bom compromisso entre desempenho e tempo de treinamento (custo-benefício), mas como critério formal do relatório adota-se o modelo com maior \texttt{best\_val\_accuracy}, que ocorreu na run de 50 épocas (Tabela~\ref{tab:melhores_resultados}).
+
+\subsubsection{ResNet50 com transfer learning (ResNet50-TL)}
+A ResNet50-TL também foi otimizada por descida de coordenadas, com redimensionamento das imagens para 224$\times$224 e uso de mixed precision fp16 para reduzir tempo de treinamento.
+
+\paragraph{Passo 1: learning rate e camadas descongeladas.}
+Testou-se o impacto da taxa de aprendizado e do percentual de camadas descongeladas; valores maiores podem trazer ganhos rápidos de acurácia, mas podem gerar curvas menos suaves.
+Além do modelo com maior acurácia nessa etapa, também foi observado um modelo com taxa menor (learning rate $1 \times 10^{-6}$) com crescimento mais estável, porém máximo menor.
+
+\paragraph{Passo 2: batch size.}
+Com a configuração escolhida do passo anterior, variou-se batch size, sendo escolhido batch 64 por combinar boa acurácia, baixa loss e menor tempo.
+
+\paragraph{Passo 3: número de épocas.}
+Foram realizadas execuções longas (até 50 épocas) e comparadas curvas e valores de \texttt{val\_loss}.
+Embora um modelo com learning rate $1 \times 10^{-6}$ tenha apresentado curvas mais suaves e menor \texttt{val\_loss} por volta de 25 épocas, o relatório reporta na Tabela~\ref{tab:melhores_resultados} a run com maior \texttt{best\_val\_accuracy} (50 épocas, learning rate $1 \times 10^{-4}$, 30 camadas descongeladas, batch 64).
 
 \subsection{Análise por classe}
 A análise por classe foi realizada a partir das métricas \texttt{class\_acc/*} exportadas do W\&B.
@@ -162,26 +215,30 @@ Como múltiplas execuções foram realizadas por arquitetura, as matrizes não s
 \centering
 \adjincludegraphics[
   width=\textwidth,
-  trim=1cm 20cm 1cm 3cm,
+  trim=1cm 20cm 1cm 3.2cm,
   clip]{figuras/matriz_densenet121_tl.pdf}
 \caption{Matriz de confusão (W\&B) da DenseNet121 com transfer learning no CIFAR-10 (validação em \texttt{x\_test}); usada para análise qualitativa de confusões entre classes.}
 \label{fig:confusao_densenet121_tl}
 \end{figure}
 
+% -------------------- 4. Discussão (opcional) --------------------
+\section{Discussão}
+De forma geral, os modelos com transfer learning obtiveram desempenho superior ao treinamento do zero.
+Além disso, observou-se que (i) o upscaling para 224$\times$224 impactou fortemente a DenseNet121-TL, (ii) a escolha de camadas descongeladas altera o trade-off entre adaptação ao CIFAR-10 e risco de overfitting, e (iii) o número de épocas deve ser escolhido com base tanto em acurácia quanto em estabilidade de loss e custo computacional.
 
 % -------------------- 5. Conclusão --------------------
 \section{Conclusão}
 Este trabalho implementou a VGG16 do zero e aplicou transfer learning com VGG16, ResNet50 e DenseNet121 para classificação no CIFAR-10.
-Os resultados mostraram que modelos com transfer learning obtiveram desempenho superior ao treinamento do zero, e que a escolha de hiperparâmetros e do número de camadas treináveis impacta diretamente a \texttt{best\_val\_accuracy}.
+Os resultados mostraram que modelos com transfer learning obtiveram desempenho superior ao treinamento do zero, e que a escolha de hiperparâmetros (learning rate, batch size, épocas e quantidade de camadas treináveis) impacta diretamente a acurácia e a capacidade de generalização.
 
 Como dificuldades, destacam-se o ajuste de hiperparâmetros, a estabilidade do treinamento em algumas configurações e o tempo de execução dos experimentos.
-Como trabalhos futuros, recomenda-se testar \textit{data augmentation} mais forte, regularização adicional e estratégias de \textit{fine-tuning} por blocos para reduzir confusões entre classes visualmente semelhantes.
+Como trabalhos futuros, recomenda-se testar \textit{data augmentation} mais forte, regularização adicional e estratégias de fine-tuning por blocos para reduzir confusões entre classes visualmente semelhantes.
 
 % -------------------- Referências --------------------
 \begin{thebibliography}{9}
 
 \bibitem{wandb}
-Weights \& Biases. \textit{Experiment Tracking}. Disponível em: \url{https://wandb.ai/}. Acesso em: \dataRelatorio.
+Biewald, L. \textit{Experiment Tracking with Weights and Biases}. 2020. Software disponível em: \url{https://www.wandb.com/}. Acesso em: \dataRelatorio. % referência sugerida pelo próprio W\&B [web:219]
 
 \bibitem{cifar10}
 Krizhevsky, A. \textit{Learning Multiple Layers of Features from Tiny Images}. 2009.
